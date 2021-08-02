@@ -1,0 +1,27 @@
+.openapi-path {
+    padding: 1rem;
+    margin-top: 1rem;
+    border-radius: 4px;
+    border: 1px solid $header-color;
+
+    h2 {
+        background-color: $header-color;
+        margin-left: -1rem;
+        margin-right: -1rem;
+        margin-top: -1rem;
+        padding-left: 1rem;
+        padding-right: 1rem;
+        
+    }
+}
+
+.openapi-method:not(:last-of-type) {
+    border-bottom: 1px solid $header-color;
+}
+
+.openapi-method-parameter-required {
+    font-weight: bold;
+    letter-spacing: 0.025em;
+    font-size: small;
+    color: rgb(209, 9, 9);
+}

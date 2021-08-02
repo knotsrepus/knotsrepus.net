@@ -1,0 +1,4 @@
+baseURL = "http://knotsrepus.net/"
+languageCode = "en-us"
+title = "KNOTSREPUS"
+theme = "looking-glass"

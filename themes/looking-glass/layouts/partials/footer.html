@@ -1,0 +1,10 @@
+<div class="footer" role="contentinfo">
+    <p class="footer-content">
+        &copy; 2021 KNOTSREPUS. Made with <a href="https://gohugo.io">Hugo</a>, a static site generator.
+        <br/>
+        {{ if .GitInfo }}
+            Page version {{ .GitInfo.AbbreviatedHash }}. Last modified {{ .Lastmod.Format "2006-01-02" }}.
+        {{ end }}
+        Site last built on {{ now.Format "2006-01-02" }}.
+    </p>
+</div>

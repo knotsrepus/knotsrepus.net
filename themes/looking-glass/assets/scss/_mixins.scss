@@ -1,0 +1,7 @@
+@mixin drop-shadow($color, $opacity: 0.25) {
+    filter: drop-shadow(0 4px 9px rgba($color, $opacity));
+}
+
+@mixin drop-shadow-up($color, $opacity: 0.25) {
+    filter: drop-shadow(0 -4px 9px rgba($color, $opacity));
+}

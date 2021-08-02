@@ -1,0 +1,16 @@
+<div class="header">
+    <div class="logotype">
+        <a href="{{ "/" | relURL }}">{{ .Site.Title }}</a>
+    </div>
+    {{ with .Site.Menus.main }}
+        <nav role="navigation">
+            <ul>
+                {{ range . }}
+                <li>
+                    <a href="{{ .URL }}" class="nav-item">{{ .Name }}</a>
+                </li>
+                {{ end }}
+              </ul>
+        </nav>
+    {{ end }}
+</div>

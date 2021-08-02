@@ -1,0 +1,19 @@
+.footer {
+    background-color: $header-color;
+    height: 4 * $base-text-size;
+    margin-top: 2rem;
+
+    display: flex;
+    align-items: center;
+
+    @include drop-shadow-up($header-color);
+}
+
+.footer-content {
+    margin-left: auto;
+    margin-right: auto;
+
+    font-size: small;
+    text-align: center;
+}
+  

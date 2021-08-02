@@ -1,0 +1,10 @@
+<head>
+    {{ $style := resources.Get "scss/style.scss" | resources.ToCSS (dict "outputStyle" "compressed") | fingerprint }}
+    <link rel="stylesheet" href="{{ $style.RelPermalink }}">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta charset="UTF-8">
+    <title>
+        {{ .Page.Title }}
+    </title>
+    {{ hugo.Generator }}
+</head>

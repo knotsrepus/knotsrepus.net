@@ -1,0 +1,187 @@
+openapi: "3.0.1"
+info:
+  title: "KNOTSREPUS API"
+  description: "API to retrieve archived /r/superstonk submissions."
+  license:
+    name: "Apache 2.0"
+    url: "http://www.apache.org/licenses/LICENSE-2.0.html"
+  version: "2021-08-01T18:19:54Z"
+servers:
+- url: "https://api.knotsrepus.net"
+paths:
+  /submission/{submission_id}/media:
+    get:
+      summary: "Get the list of archived media attached to the submission with the\
+        \ specified ID."
+      parameters:
+      - name: "submission_id"
+        in: "path"
+        description: "The ID of the submission to return the list of media for."
+        required: true
+        schema:
+          type: "string"
+      responses:
+        "200":
+          description: "The list of filenames for the media attached to the submission."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Empty"
+    options:
+      parameters:
+      - name: "submission_id"
+        in: "path"
+        required: true
+        schema:
+          type: "string"
+      responses:
+        "200":
+          description: "200 response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Empty"
+  /submission/{submission_id}:
+    get:
+      summary: "Get the archived submission with the specified ID."
+      parameters:
+      - name: "submission_id"
+        in: "path"
+        description: "The ID of the submission to return."
+        required: true
+        schema:
+          type: "string"
+      responses:
+        "200":
+          description: "The archived submission."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Empty"
+    options:
+      parameters:
+      - name: "submission_id"
+        in: "path"
+        required: true
+        schema:
+          type: "string"
+      responses:
+        "200":
+          description: "200 response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Empty"
+  /submission:
+    get:
+      summary: "Gets a list of IDs for all archived submissions."
+      responses:
+        "200":
+          description: "The list of IDs for all archived submissions."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Empty"
+    options:
+      responses:
+        "200":
+          description: "200 response"
+          headers:
+            Access-Control-Allow-Origin:
+              schema:
+                type: "string"
+            Access-Control-Allow-Methods:
+              schema:
+                type: "string"
+            Access-Control-Allow-Headers:
+              schema:
+                type: "string"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Empty"
+  /submission/{submission_id}/comments:
+    get:
+      summary: "Get the archived comments on the submission with the specified ID."
+      parameters:
+      - name: "submission_id"
+        in: "path"
+        description: "The ID of the submission to return comments for."
+        required: true
+        schema:
+          type: "string"
+      responses:
+        "200":
+          description: "The archived comments on the submission."
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Empty"
+    options:
+      parameters:
+      - name: "submission_id"
+        in: "path"
+        required: true
+        schema:
+          type: "string"
+      responses:
+        "200":
+          description: "200 response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Empty"
+  /submission/{submission_id}/media/{filename}:
+    get:
+      summary: "Get the archived media object with the specified filename attached\
+        \ to the submission with the specified ID."
+      parameters:
+      - name: "filename"
+        in: "path"
+        description: "The filename of the media object."
+        required: true
+        schema:
+          type: "string"
+      - name: "submission_id"
+        in: "path"
+        description: "The ID of the submission the media object is attached to."
+        required: true
+        schema:
+          type: "string"
+      responses:
+        "200":
+          description: "The media object."
+          content:
+            video/*:
+              schema:
+                $ref: "#/components/schemas/Empty"
+            image/*:
+              schema:
+                $ref: "#/components/schemas/Empty"
+            audio/*:
+              schema:
+                $ref: "#/components/schemas/Empty"
+    options:
+      parameters:
+      - name: "filename"
+        in: "path"
+        required: true
+        schema:
+          type: "string"
+      - name: "submission_id"
+        in: "path"
+        required: true
+        schema:
+          type: "string"
+      responses:
+        "200":
+          description: "200 response"
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Empty"
+components:
+  schemas:
+    Empty:
+      title: "Empty Schema"
+      type: "object"
