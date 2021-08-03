@@ -5,3 +5,9 @@
 @mixin drop-shadow-up($color, $opacity: 0.25) {
     filter: drop-shadow(0 -4px 9px rgba($color, $opacity));
 }
+
+@mixin small-screen-override {
+    @media (max-width: $small-screen-breakpoint) {
+        @content;
+    }
+}

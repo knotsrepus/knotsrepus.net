@@ -6,6 +6,10 @@
 
     display: flex;
     align-items: center;
+    @include small-screen-override {
+        flex-wrap: wrap;
+        padding-bottom: 4 * $base-text-size;
+    }
 
     @include drop-shadow($header-color);
 
@@ -27,10 +31,26 @@
         margin-bottom: auto;
 
         display: inline-flex;
+        @include small-screen-override {
+            min-width: 100%;
+            margin-left: 0;
+            margin-right: 0;
+            a {
+                margin-left: auto;
+                margin-right: auto;
+            }
+        }
+
         align-items: center;
         font-weight: bold;
         font-size: 200%;
         letter-spacing: 0.25rem;
+
+        a {
+            transform: scaleX(-1);
+            unicode-bidi: bidi-override;
+            direction: rtl;
+        }
     }
 
     nav {
@@ -41,12 +61,19 @@
         margin-bottom: auto;
 
         display: inline-block;
+        @include small-screen-override {
+            width: 100%;
+        }
 
         ul {
             list-style-type: none;
             display: flex;
             align-items: center;
             height: 100%;
+            @include small-screen-override {
+                justify-content: space-around;
+                padding-left: 0;
+            }
 
             li {
                 padding-left: 1rem;
