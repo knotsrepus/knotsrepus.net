@@ -38,9 +38,12 @@ jobs:
         uses: actions/download-artifact@v2
         with:
           name: site-package
+
+      - name: Get dependencies
+        run: cd /home/runner/work/_actions/luisgreen/amplify_deployment/v0.0.1 && npm install
         
       - name: Deploy to AWS
-        uses: luisgreen/amplify_deployment@main
+        uses: luisgreen/amplify_deployment@v0.0.1
         with:
           appId: ${{ secrets.AWS_APP_ID }}
           branchName: ${{ secrets.AWS_APP_BRANCH_NAME }}
