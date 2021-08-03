@@ -37,12 +37,14 @@ case "$(uname -m)" in
         ;;
 esac
 
-DOWNLOAD_URL=$(curl -s https://api.github.com/repos/gohugoio/hugo/releases/latest \
+IFS=$'\n' DOWNLOAD_URL=($(curl -s https://api.github.com/repos/gohugoio/hugo/releases/latest \
         | grep browser_download_url \
         | grep ${OSTYPE}-${ARCH} \
-        | cut -d '"' -f 4)
+        | cut -d '"' -f 4))
 
-echo $DOWNLOAD_URL
+DOWNLOAD_URL="${DOWNLOAD_URL[${#DOWNLOAD_URL[@]}-1]}"
+
+echo "Downloading Hugo from $DOWNLOAD_URL..."
 
 mkdir -p tmp
 cd tmp
