@@ -74,10 +74,68 @@ paths:
                 $ref: "#/components/schemas/Empty"
   /submission:
     get:
-      summary: "Gets a list of IDs for all archived submissions."
+      summary: "Gets summary information for archived submissions."
+      parameters:
+      - name: "sort"
+        in: "query"
+        description: |
+          The attribute used to order the returned results.
+        schema:
+          type: "string"
+          default: "created_utc"
+          enum:
+          - "created_utc"
+          - "score"
+      - name: "sort_order"
+        in: "query"
+        description: |
+          Specifies the ordering used in returned results.
+        schema:
+          type: "string"
+          default: "asc"
+          enum:
+          - "asc"
+          - "desc"
+      - name: "author"
+        in: "query"
+        description: |
+          Return submissions by the specified Reddit user.
+        schema:
+          type: "string"
+      - name: "post_type"
+        in: "query"
+        description: |
+          Return submissions of the specified post type.
+        schema:
+          type: "string"
+          enum:
+          - "dd"
+          - "discussion"
+          - "shitpost"
+          - "social_media"
+          - "data"
+          - "fluff"
+          - "news"
+          - "daily"
+      - name: "count"
+        in: "query"
+        description: |
+          The number of items to return in the response.
+          This can be used in conjunction with `after_id` to provide pagination of results.
+        schema:
+          type: "int"
+          default: 100
+          min: 1
+          max: 100
+      - name: "after_id"
+        description: |
+          Return results after the specified ID.
+          This can be used in conjunction with `count` to provide pagination of results.
+        schema:
+          type: "string"
       responses:
         "200":
-          description: "The list of IDs for all archived submissions."
+          description: "Summary information for archived submissions."
           content:
             application/json:
               schema:

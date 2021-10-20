@@ -38,7 +38,20 @@
                                                     <span class="openapi-method-parameter-required">(required)</span>
                                                 {{ end }}
                                                 <br/>
-                                                {{ .description }}
+                                                {{ .description | markdownify }}
+                                                {{ if .schema.default }}
+                                                    <br/>
+                                                    If this parameter is not supplied, its default value is <code>{{ .schema.default }}</code>.
+                                                {{ end }}
+                                                {{ if .schema.enum }}
+                                                    <br/>
+                                                    Accepted values:
+                                                    <ul>
+                                                        {{ range .schema.enum }}
+                                                            <li><code>{{ . }}</code></li>
+                                                        {{ end }}
+                                                    </ul>
+                                                {{ end }}
                                             </li>
                                         {{ end }}
                                     </ul>
