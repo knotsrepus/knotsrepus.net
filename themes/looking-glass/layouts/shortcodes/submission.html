@@ -1,0 +1,203 @@
+{{ $id := md5 now }}
+
+<div id="{{ $id }}" data-content="submission" data-content-url="https://api.knotsrepus.net/submission/{id}/">
+    Loading...
+    <template id="template-{{ $id }}">
+        <h1 class="submission-title"></h1>
+        by <a class="submission-author" href="#"></a>, <span class="submission-date"></span> (<span class="submission-score"></span> points)
+        <br/>
+        <a class="submission-origin" href="#">Original post on Reddit</a>
+        <hr/>
+        <div class="submission-text"></div>
+    </template>
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script>
+        (() => {
+            let superscript = {
+                name: "superscript",
+                level: "inline",
+                start(src) { return src.match(/\^/)?.index; },
+                tokenizer(src, tokens) {
+                    let rule = /^\^(\S+)/;
+                    let match = rule.exec(src);
+                    if (match) {
+                        let token = {
+                            type: "superscript",
+                            raw: match[0],
+                            text: this.lexer.inlineTokens(match[1].trim())
+                        };
+                        return token;
+                    }
+                },
+                renderer(token) {
+                    return `<sup>${this.parser.parseInline(token.text)}</sup>`;
+                },
+                childTokens: ["sup"]
+            };
+
+            let user_mention = {
+                name: "usermention",
+                level: "inline",
+                start(src) { return src.match(/\b\/?u/)?.index; },
+                tokenizer(src, tokens) {
+                    let rule = /^\/?u\/([\w_-]+)/;
+                    let match = rule.exec(src);
+                    if (match) {
+                        let token = {
+                            type: "usermention",
+                            raw: match[0],
+                            username: match[1].trim()
+                        };
+                        return token;
+                    }
+                },
+                renderer(token) {
+                    return `<a href="{{ "/author" | relURL }}?author=${token.username}">${token.raw}</a>`;
+                },
+                childTokens: ["a"]
+            }
+
+            let inline_reddit_image = {
+                name: "inlineimage",
+                level: "inline",
+                start(src) { return src.match(/(?<!\()https:\/\/(?:preview|i).redd.it/)?.index },
+                tokenizer(src, tokens) {
+                    let rule = /^(?<!\()https:\/\/(?:preview|i).redd.it\/(\S+)/;
+                    let match = rule.exec(src);
+                    if (match) {
+                        let token = {
+                            type: "inlineimage",
+                            raw: match[0],
+                            filename: match[1]
+                        };
+                        return token;
+                    }
+                },
+                renderer(token) {
+                    return `<img src="${token.raw}" />`;
+                },
+                childTokens: ["img"]
+            };
+
+            let captioned_reddit_image = {
+                name: "captionedimage",
+                level: "inline",
+                start(src) { return src.match(/\[/)?.index },
+                tokenizer(src, tokens) {
+                    let rule = /^\[(.+)\]\((https:\/\/(?:preview|i).redd.it\/\S+)\)/;
+                    let match = rule.exec(src);
+                    if (match) {
+                        let token = {
+                            type: "captionedimage",
+                            raw: match[0],
+                            caption: this.lexer.inlineTokens(match[1].trim()),
+                            url: match[2].trim()
+                        };
+                        return token;
+                    }
+                },
+                renderer(token) {
+                    return `<figure><img src="${token.url}" /><figcaption>${this.parser.parseInline(token.caption)}</figcaption></figure>`;
+                },
+                childTokens: ["figure"]
+            }
+
+            let raw_superstonk_link = {
+                name: "rawsuperstonklink",
+                level: "inline",
+                start(src) { return src.match(/https?:\/\/(?:www\.|old\.|new\.)?reddit\.com/)?.index; },
+                tokenizer(src, tokens) {
+                    let rule = /^https?:\/\/(?:www\.|old\.|new\.)?reddit\.com\/r\/[Ss]uperstonk\/(?:comments|duplicates)\/(\w+)\/(?:\S*)/;
+                    let match = rule.exec(src);
+                    if (match) {
+                        let token = {
+                            type: "rawsuperstonklink",
+                            raw: match[0],
+                            id: match[1],
+                        }
+                        return token;
+                    }
+                },
+                renderer(token) {
+                    console.log(token);
+                    return `<a href="{{ "/submission" | relURL }}?id=${token.id}">${token.raw}</a>`;
+                },
+                childTokens: ["a"]
+            };
+
+            let superstonk_link = {
+                name: "superstonklink",
+                level: "inline",
+                start(src) { return src.match(/\[/)?.index; },
+                tokenizer(src, tokens) {
+                    let rule = /^\[(.+)\]\(https?:\/\/(?:www\.|old\.|new\.)?reddit\.com\/r\/[Ss]uperstonk\/(?:comments|duplicates)\/(\w+)\/(?:\S*)\)/;
+                    let match = rule.exec(src);
+                    if (match) {
+                        let token = {
+                            type: "superstonklink",
+                            raw: match[0],
+                            linktext: match[1],
+                            id: match[2],
+                        }
+                        return token;
+                    }
+                },
+                renderer(token) {
+                    console.log(token);
+                    return `<a href="{{ "/submission" | relURL }}?id=${token.id}">${token.linktext}</a>`;
+                },
+                childTokens: ["a"]
+            }
+
+            marked.use({
+                gfm: true,
+                extensions: [superscript, user_mention, inline_reddit_image, captioned_reddit_image, raw_superstonk_link, superstonk_link]
+            });
+
+            function htmlDecode(input) {
+                var doc = new DOMParser().parseFromString(input, "text/html");
+                return doc.documentElement.textContent;
+            }
+
+            function renderPostContent(selftext, id) {
+                return marked(htmlDecode(selftext));
+            }
+
+            let el = document.getElementById('{{ $id }}');
+            let params = new URLSearchParams(window.location.search);
+
+            let url = el.getAttribute("data-content-url").replace("{id}", params.get("id"));
+
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    let template = document.getElementById('template-{{ $id }}');
+                    let div = document.createElement("div");
+                    el.parentNode.replaceChild(div, el);
+
+                    let clone = template.content.cloneNode(true);
+                    let title = clone.querySelector(".submission-title");
+                    let author = clone.querySelector(".submission-author");
+                    let date = clone.querySelector(".submission-date");
+                    let score = clone.querySelector(".submission-score");
+                    let text = clone.querySelector(".submission-text");
+                    let origin = clone.querySelector(".submission-origin");
+
+                    title.innerHTML = data.title;
+                    document.title = data.title;
+
+                    author.innerText = "/u/" + data.author;
+                    author.href = '{{ "/author" | relURL }}?author=' + data.author;
+
+                    date.innerText = new Date(data.created_utc * 1000).toDateString();
+                    score.innerText = data.score;
+
+                    text.innerHTML = renderPostContent(data.selftext, data.id);
+
+                    origin.href = data.url;
+
+                    div.appendChild(clone);
+                });
+        })();
+    </script>
+</div>

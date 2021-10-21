@@ -61,3 +61,26 @@ ul,ol {
         padding-left: 0.5em;
     }
 }
+
+strong {
+    font-weight: bold;
+}
+
+em {
+    font-style: italic;
+}
+
+sup {
+    vertical-align: super;
+    font-size: 70%;
+}
+
+img {
+    max-width: 100%;
+}
+
+figcaption {
+    text-align: center;
+    font-size: 80%;
+    margin-bottom: 1em;
+}

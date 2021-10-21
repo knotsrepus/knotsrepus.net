@@ -1,0 +1,68 @@
+{{ $id := md5 now }}
+
+{{ with .Get "title" }}
+<h2>{{ . }}</h2>
+{{ end }}
+
+{{ $query := slice }}
+{{ with .Get "author" }}
+{{ $query = $query | append "author" . }}
+{{ end }}
+{{ with .Get "postType" }}
+{{ $query = $query | append "post_type" . }}
+{{ end }}
+{{ with .Get "sort" }}
+{{ $query = $query | append "sort" . }}
+{{ end }}
+{{ with .Get "sortOrder" }}
+{{ $query = $query | append "sort_order" . }}
+{{ end }}
+{{ with .Get "count" }}
+{{ $query = $query | append "count" . }}
+{{ end }}
+{{ with .Get "afterId" }}
+{{ $query = $query | append "after_id" . }}
+{{ end }}
+<div id="{{ $id }}" data-content="submission-list" data-content-url="https://api.knotsrepus.net/submission?{{ (querify $query) | safeURL }}">
+    Loading...
+    <template id="template-{{ $id }}">
+        <li>
+            <a class="submission-title" href="#"></a>
+            <br/>
+            <small>by <a class="submission-author" href="#"></a>, <span class="submission-date"></span> (<span class="submission-score"></span> points)</small>
+        </li>
+    </template>
+    <script>
+        (() => {
+            let el = document.getElementById('{{ $id }}');
+            let url = el.getAttribute("data-content-url");
+            
+            fetch(url)
+                .then(response => response.json())
+                .then(data => {
+                    let template = document.getElementById('template-{{ $id }}');
+                    let list = document.createElement("ol");
+                    el.parentNode.replaceChild(list, el);
+
+                    for (item of data) {
+                        let clone = template.content.cloneNode(true);
+                        let title = clone.querySelector(".submission-title");
+                        let author = clone.querySelector(".submission-author");
+                        let date = clone.querySelector(".submission-date");
+                        let score = clone.querySelector(".submission-score");
+
+                        title.innerHTML = item.title;
+                        title.href = '{{ "/submission" | relURL }}?id=' + item.submission_id;
+
+                        author.innerText = "/u/" + item.author;
+                        author.href = '{{ "/author" | relURL }}?author=' + item.author;
+
+                        date.innerText = new Date(item.created_utc * 1000).toDateString();
+                        score.innerText = item.score;
+
+                        list.appendChild(clone);
+                    }
+                });
+        })();
+    </script>
+</div>
