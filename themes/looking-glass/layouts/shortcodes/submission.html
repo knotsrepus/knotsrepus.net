@@ -13,6 +13,12 @@
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script>
         (() => {
+            let el = document.getElementById('{{ $id }}');
+            let params = new URLSearchParams(window.location.search);
+            let submission_id = params.get("id");
+
+            let url = el.getAttribute("data-content-url").replace("{id}", submission_id);
+
             let superscript = {
                 name: "superscript",
                 level: "inline",
@@ -74,7 +80,9 @@
                     }
                 },
                 renderer(token) {
-                    return `<img src="${token.raw}" />`;
+                    let imgUrl = new URL(`https:\/\/api.knotsrepus.net/submission/${submission_id}/media/${token.filename}`);
+                    imgUrl.search = "";
+                    return `<img src="${imgUrl}" />`;
                 },
                 childTokens: ["img"]
             };
@@ -84,20 +92,23 @@
                 level: "inline",
                 start(src) { return src.match(/\[/)?.index },
                 tokenizer(src, tokens) {
-                    let rule = /^\[(.+)\]\((https:\/\/(?:preview|i).redd.it\/\S+)\)/;
+                    let rule = /^\[(.+)\]\((https:\/\/(?:preview|i).redd.it\/(\S+))\)/;
                     let match = rule.exec(src);
                     if (match) {
                         let token = {
                             type: "captionedimage",
                             raw: match[0],
                             caption: this.lexer.inlineTokens(match[1].trim()),
-                            url: match[2].trim()
+                            url: match[2].trim(),
+                            filename: match[3].trim()
                         };
                         return token;
                     }
                 },
                 renderer(token) {
-                    return `<figure><img src="${token.url}" /><figcaption>${this.parser.parseInline(token.caption)}</figcaption></figure>`;
+                    let imgUrl = new URL(`https:\/\/api.knotsrepus.net/submission/${submission_id}/media/${token.filename}`);
+                    imgUrl.search = "";
+                    return `<figure><img src="${imgUrl}" /><figcaption>${this.parser.parseInline(token.caption)}</figcaption></figure>`;
                 },
                 childTokens: ["figure"]
             }
@@ -162,11 +173,6 @@
             function renderPostContent(selftext, id) {
                 return marked(htmlDecode(selftext));
             }
-
-            let el = document.getElementById('{{ $id }}');
-            let params = new URLSearchParams(window.location.search);
-
-            let url = el.getAttribute("data-content-url").replace("{id}", params.get("id"));
 
             fetch(url)
                 .then(response => response.json())
