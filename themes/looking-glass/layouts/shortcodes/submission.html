@@ -1,7 +1,7 @@
 {{ $id := md5 now }}
 
-<div id="{{ $id }}" data-content="submission" data-content-url="https://api.knotsrepus.net/submission/{id}/">
-    Loading...
+<div id="{{ $id }}" data-content-url="https://api.knotsrepus.net/submission/{id}/">
+    <span class="filler-text">Loading...</span>
     <template id="template-{{ $id }}">
         <h1 class="submission-title"></h1>
         by <a class="submission-author" href="#"></a>, <span class="submission-date"></span> (<span class="submission-score"></span> points)
@@ -52,7 +52,7 @@
                     }
                 },
                 renderer(token) {
-                    return `<a href="{{ "/author" | relURL }}?author=${token.username}">${token.raw}</a>`;
+                    return `<a href="{{ "/browse" | relURL }}?author=${token.username}">${token.raw}</a>`;
                 },
                 childTokens: ["a"]
             }
@@ -187,7 +187,7 @@
                     document.title = data.title;
 
                     author.innerText = "/u/" + data.author;
-                    author.href = '{{ "/author" | relURL }}?author=' + data.author;
+                    author.href = '{{ "/browse" | relURL }}?author=' + data.author;
 
                     date.innerText = new Date(data.created_utc * 1000).toDateString();
                     score.innerText = data.score;

@@ -1,9 +1,5 @@
 {{ $id := md5 now }}
 
-{{ with .Get "title" }}
-<h2>{{ . }}</h2>
-{{ end }}
-
 {{ $query := slice }}
 {{ with .Get "author" }}
 {{ $query = $query | append "author" . }}
@@ -23,46 +19,191 @@
 {{ with .Get "afterId" }}
 {{ $query = $query | append "after_id" . }}
 {{ end }}
-<div id="{{ $id }}" data-content="submission-list" data-content-url="https://api.knotsrepus.net/submission?{{ (querify $query) | safeURL }}">
-    Loading...
-    <template id="template-{{ $id }}">
-        <li>
-            <a class="submission-title" href="#"></a>
-            <br/>
-            <small>by <a class="submission-author" href="#"></a>, <span class="submission-date"></span> (<span class="submission-score"></span> points)</small>
-        </li>
-    </template>
-    <script>
-        (() => {
-            let el = document.getElementById('{{ $id }}');
-            let url = el.getAttribute("data-content-url");
-            
-            fetch(url)
-                .then(response => response.json())
-                .then(data => {
-                    let template = document.getElementById('template-{{ $id }}');
-                    let list = document.createElement("ol");
-                    el.parentNode.replaceChild(list, el);
 
-                    for (item of data) {
-                        let clone = template.content.cloneNode(true);
-                        let title = clone.querySelector(".submission-title");
-                        let author = clone.querySelector(".submission-author");
-                        let date = clone.querySelector(".submission-date");
-                        let score = clone.querySelector(".submission-score");
-
-                        title.innerHTML = item.title;
-                        title.href = '{{ "/submission" | relURL }}?id=' + item.submission_id;
-
-                        author.innerText = "/u/" + item.author;
-                        author.href = '{{ "/author" | relURL }}?author=' + item.author;
-
-                        date.innerText = new Date(item.created_utc * 1000).toDateString();
-                        score.innerText = item.score;
-
-                        list.appendChild(clone);
-                    }
-                });
-        })();
-    </script>
+{{ if .Get "queryable" }}
+<template id="template-querycontrols-{{ $id }}">
+    <div class="query-controls">
+        Post types:
+        <a href="#" class="query-allposts">All</a> |
+        <a href="#" class="query-dd">DDs</a> |
+        <a href="#" class="query-discussion">Discussions</a> |
+        <a href="#" class="query-shitpost">Shitposts</a> |
+        <a href="#" class="query-socialmedia">Social media</a> |
+        <a href="#" class="query-data">Data</a> |
+        <a href="#" class="query-fluff">Fluff</a> |
+        <a href="#" class="query-news">News</a> |
+        <a href="#" class="query-daily">Daily discussion threads</a>
+        <br />
+        Sort by:
+        <a href="#" class="query-chronological">Submission date</a> | <a href="#" class="query-score">Score</a>
+        <br />
+        Sort order:
+        <a href="#" class="query-ascending">Ascending (A-Z)</a> | <a href="#" class="query-descending">Descending (Z-A)</a>
+        <hr />
+    </div>
+</template>
+{{ end }}
+<template id="template-{{ $id }}">
+    <li data-id="">
+        <a class="submission-title" href="#"></a>
+        <br/>
+        <small>by <a class="submission-author" href="#"></a>, <span class="submission-date"></span> (<span class="submission-score"></span> points)</small>
+    </li>
+</template>
+<div id="{{ $id }}" data-content-url="https://api.knotsrepus.net/submission?{{ (querify $query) | safeURL }}">
+    <span class="filler-text">Loading...</span>
 </div>
+<script>
+    (() => {
+        let el = document.getElementById('{{ $id }}');
+        let url = new URL(el.getAttribute("data-content-url"));
+
+        {{ if .Get "queryable" }}
+        let additional_params = new URLSearchParams(window.location.search);
+        for (let [name, value] of additional_params) {
+            url.searchParams.set(name, value);
+        }
+        {{ end }}
+
+        {{ if .Get "queryable" }}
+        let queryTemplate = document.getElementById('template-querycontrols-{{ $id }}');
+        let queryControls = queryTemplate.content.cloneNode(true);
+
+        let init_query_link = (query_class, query_param, query_value) => {
+            let url = new URL(window.location);
+            let params = new URLSearchParams(window.location.search);
+
+            let queryControl = queryControls.querySelector(query_class);
+
+            if (params.get(query_param) !== query_value) {
+                if (query_value === null) {
+                    url.searchParams.delete(query_param);
+                } else {
+                    url.searchParams.set(query_param, query_value);
+                }
+                queryControl.href = url.toString();
+            } else {
+
+                queryControl.removeAttribute("href");
+                queryControl.innerHTML = "<strong>" + queryControl.innerHTML + "</strong>";
+            }
+
+        }
+
+        init_query_link(".query-allposts", "post_type", null);
+        init_query_link(".query-dd", "post_type", "dd");
+        init_query_link(".query-discussion", "post_type", "discussion");
+        init_query_link(".query-shitpost", "post_type", "shitpost");
+        init_query_link(".query-socialmedia", "post_type", "social_media");
+        init_query_link(".query-data", "post_type", "data");
+        init_query_link(".query-fluff", "post_type", "fluff");
+        init_query_link(".query-news", "post_type", "news");
+        init_query_link(".query-daily", "post_type", "daily");
+
+        init_query_link(".query-chronological", "sort", null);
+        init_query_link(".query-score", "sort", "score");
+        
+        init_query_link(".query-ascending", "sort_order", null);
+        init_query_link(".query-descending", "sort_order", "desc");
+
+        el.insertBefore(queryControls, el.firstChild);
+        {{ end }}
+
+        {{ if .Get "queryable" }}
+        let post_types = {
+            "dd": "DDs",
+            "discussion": "Discussions",
+            "shitpost": "Shitposts",
+            "social_media": "Social media threads",
+            "data": "Data posts",
+            "fluff": "Fluff posts",
+            "news": "News posts",
+            "daily": "Daily discussion threads",
+        }
+        let title = "All posts";
+        if (additional_params.has("post_type")) {
+            title = post_types[additional_params.get("post_type")];
+        }
+        if (additional_params.has("author")) {
+            title += " by /u/" + additional_params.get("author");
+        }
+        document.title = title;
+        let heading = document.createElement("h2");
+        heading.innerText = title;
+        el.insertBefore(heading, el.firstChild);
+        {{ else if .Get "title" }}
+        let heading = document.createElement("h2");
+        heading.innerText = '{{ .Get "title" }}';
+        el.insertBefore(heading, el.firstChild);
+        {{ end }}
+
+        let appendItem = (list, template, item) => {
+            let clone = template.content.cloneNode(true);
+            clone.children[0].setAttribute("data-id", item.submission_id);
+
+            let title = clone.querySelector(".submission-title");
+            let author = clone.querySelector(".submission-author");
+            let date = clone.querySelector(".submission-date");
+            let score = clone.querySelector(".submission-score");
+
+            title.innerHTML = item.title;
+            title.href = '{{ "/submission" | relURL }}?id=' + item.submission_id;
+
+            author.innerText = "/u/" + item.author;
+            author.href = '{{ "/browse" | relURL }}?author=' + item.author;
+
+            date.innerText = new Date(item.created_utc * 1000).toDateString();
+            score.innerText = item.score;
+
+            list.appendChild(clone); 
+        };
+
+        {{ if .Get "infiniteScroll" }}
+        let observer = new IntersectionObserver((targets, observer) => {
+            targets.forEach(target => {
+                if (target.isIntersecting) {
+                    let id = target.target.getAttribute("data-id");
+                    observer.unobserve(target.target);
+
+                    let nextPageUrl = new URL(url);
+                    nextPageUrl.searchParams.set("after_id", id);
+                    fetch(nextPageUrl)
+                        .then(response => response.json())
+                        .then(data => {
+                            let template = document.getElementById('template-{{ $id }}');
+                            let list = document.getElementById('{{ $id }}');
+
+                            for (item of data) {
+                                appendItem(list, template, item);
+                            }
+
+                            observer.observe(list.lastElementChild);
+                        });
+                }
+            });
+        }, { rootMargin: "0px 0px 600px 0px" });
+        {{ end }}
+
+        fetch(url)
+            .then(response => response.json())
+            .then(data => {
+                let template = document.getElementById('template-{{ $id }}');
+                let list = document.createElement("ol");
+                let filler = el.querySelector(".filler-text");
+                el.replaceChild(list, filler);
+                list.id = el.id;
+                el.removeAttribute("id");
+                el.removeAttribute("data-content-url");
+
+                for (item of data) {
+                    appendItem(list, template, item);
+                }
+
+                {{ if .Get "infiniteScroll" }}
+                if (list.lastElementChild) {
+                    observer.observe(list.lastElementChild);
+                }
+                {{ end }}
+            });
+    })();
+</script>

@@ -33,7 +33,10 @@ body {
 
 a {
     color: $text-color;
-    text-decoration: underline;
+
+    &:link, &:visited {
+        text-decoration: underline;
+    }
 }
 
 @for $i from 1 through 6 {
