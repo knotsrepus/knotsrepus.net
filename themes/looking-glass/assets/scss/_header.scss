@@ -29,6 +29,7 @@
         margin-right: 3rem;
         margin-top: auto;
         margin-bottom: auto;
+        position: relative;
 
         display: inline-flex;
         @include small-screen-override {
@@ -79,6 +80,25 @@
                 padding-left: 1rem;
                 padding-right: 1rem;
             }
+        }
+    }
+
+    .version-bubble {
+        position: absolute;
+        font-size: 12px;
+        letter-spacing: initial;
+        background-color: #ea2424;
+        padding: 0px 4px;
+        border-radius: 8px;
+        height: 24px;
+        line-height: 24px;
+        right: 5%;
+        bottom: -15%;
+        transform: rotate(-5deg);
+
+        @include small-screen-override {
+            right: 30%;
+            bottom: -5%;
         }
     }
 }

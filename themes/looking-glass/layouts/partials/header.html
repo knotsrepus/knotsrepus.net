@@ -1,6 +1,9 @@
 <div class="header">
     <div class="logotype">
         <a href="{{ "/" | relURL }}">{{ .Site.Title }}</a>
+        {{ with .Site.Params.Version }}
+        <p class="version-bubble">{{ .ReleaseType}} v{{ .Number }}</p>
+        {{ end }}
     </div>
     {{ with .Site.Menus.main }}
         <nav role="navigation">

@@ -204,11 +204,12 @@
                             .then(response => response.json())
                             .then(data => {
                                 console.log(data);
-                                let html = "";
+                                let html = `<figure class="gallery">`;
                                 data.forEach(item => {
                                     let itemUrl = new URL(mediaUrl + "/" + item);
                                     html += `<img src="${itemUrl}" /><br />`;
                                 });
+                                html += `</figure>`;
                                 contentElement.innerHTML = html;
                             });
                         break;
@@ -345,6 +346,7 @@
                             audio.currentTime = video.currentTime;
                         };
 
+                        contentElement.innerHTML = "";
                         contentElement.appendChild(container);
                         break;
                     case "text":
@@ -375,6 +377,8 @@
 
                     date.innerText = new Date(data.created_utc * 1000).toDateString();
                     score.innerText = data.score;
+
+                    content.innerHTML = "<p>Loading...</p>";
 
                     renderPostContent(data, content);
 

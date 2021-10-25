@@ -2,3 +2,7 @@ baseURL = "http://knotsrepus.net/"
 languageCode = "en-us"
 title = "KNOTSREPUS"
 theme = "looking-glass"
+
+[params.version]
+number = "0.1"
+releaseType = "Alpha"
