@@ -147,10 +147,10 @@
             let score = clone.querySelector(".submission-score");
 
             title.innerHTML = item.title;
-            title.href = '{{ "/submission" | relURL }}?id=' + item.submission_id;
+            title.href = '{{ "/submission/" | relURL }}?id=' + item.submission_id;
 
             author.innerText = "/u/" + item.author;
-            author.href = '{{ "/browse" | relURL }}?author=' + item.author;
+            author.href = '{{ "/browse/" | relURL }}?author=' + item.author;
 
             date.innerText = new Date(item.created_utc * 1000).toDateString();
             score.innerText = item.score;

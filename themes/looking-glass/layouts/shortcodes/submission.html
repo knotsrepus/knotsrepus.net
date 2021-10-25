@@ -71,7 +71,7 @@
                     }
                 },
                 renderer(token) {
-                    return `<a href="{{ "/browse" | relURL }}?author=${token.username}">${token.raw}</a>`;
+                    return `<a href="{{ "/browse/" | relURL }}?author=${token.username}">${token.raw}</a>`;
                 },
                 childTokens: ["a"]
             }
@@ -144,7 +144,7 @@
                 },
                 renderer(token) {
                     console.log(token);
-                    return `<a href="{{ "/submission" | relURL }}?id=${token.id}">${token.raw}</a>`;
+                    return `<a href="{{ "/submission/" | relURL }}?id=${token.id}">${token.raw}</a>`;
                 },
                 childTokens: ["a"]
             };
@@ -168,7 +168,7 @@
                 },
                 renderer(token) {
                     console.log(token);
-                    return `<a href="{{ "/submission" | relURL }}?id=${token.id}">${token.linktext}</a>`;
+                    return `<a href="{{ "/submission/" | relURL }}?id=${token.id}">${token.linktext}</a>`;
                 },
                 childTokens: ["a"]
             }
@@ -373,7 +373,7 @@
                     document.title = data.title;
 
                     author.innerText = "/u/" + data.author;
-                    author.href = '{{ "/browse" | relURL }}?author=' + data.author;
+                    author.href = '{{ "/browse/" | relURL }}?author=' + data.author;
 
                     date.innerText = new Date(data.created_utc * 1000).toDateString();
                     score.innerText = data.score;
