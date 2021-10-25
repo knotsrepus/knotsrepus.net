@@ -8,7 +8,20 @@
         <br/>
         <a class="submission-origin" href="#">Original post on Reddit</a>
         <hr/>
-        <div class="submission-text"></div>
+        <div class="submission-content"></div>
+    </template>
+    <template id="template-videoplayer-{{ $id }}">
+        <figure class="video-player">
+            <video src="#" controls></video>
+            <audio src="#"></audio>
+            <div class="video-controls">
+                <button class="video-controls-playpause" type="button" data-state="play"></button>
+                <progress class="video-controls-progress" value="0" min="0"></progress>
+                <button class="video-controls-mute" type="button" data-state="mute"></button>
+                <progress class="video-controls-volume" value="0.5" min="0" max="1"></progress>
+                <button class="video-controls-fullscreen" type="button" data-state="fullscreen"></button>
+            </div>
+        </figure>
     </template>
     <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
     <script>
@@ -170,8 +183,174 @@
                 return doc.documentElement.textContent;
             }
 
-            function renderPostContent(selftext, id) {
-                return marked(htmlDecode(selftext));
+            function inferMediaType(submission) {
+                if (submission.post_hint === "self") {
+                    return "text";
+                } else if (submission.post_hint === "hosted:video") {
+                    return "video";
+                } else if (submission.post_hint === "image") {
+                    return "image";
+                } else {
+                    return "gallery";
+                }
+            }
+
+            function renderPostContent(submission, contentElement) {
+                switch (inferMediaType(submission)) {
+                    case "gallery":
+                    case "image":
+                        let mediaUrl = new URL(url + "media");
+                        fetch(mediaUrl)
+                            .then(response => response.json())
+                            .then(data => {
+                                console.log(data);
+                                let html = "";
+                                data.forEach(item => {
+                                    let itemUrl = new URL(mediaUrl + "/" + item);
+                                    html += `<img src="${itemUrl}" /><br />`;
+                                });
+                                contentElement.innerHTML = html;
+                            });
+                        break;
+                    case "video":
+                        let template = document.getElementById('template-videoplayer-{{ $id }}');
+                        let container = template.content.cloneNode(true);
+
+                        let videoUrl = new URL(url + "media/video.mp4");
+                        let audioUrl = new URL(url + "media/audio.mp4");
+                        
+                        let video = container.querySelector("video");
+                        video.src = videoUrl.toString();
+                        video.controls = false;
+                        
+                        let audio = container.querySelector("audio");
+                        audio.src = audioUrl.toString();
+                        audio.volume = 0.5;
+
+                        let controls = container.querySelector(".video-controls");
+                        controls.setAttribute("data-state", "visible");
+
+                        let playpause = controls.querySelector(".video-controls-playpause");
+                        let progress = controls.querySelector(".video-controls-progress");
+                        let mute = controls.querySelector(".video-controls-mute");
+                        let volume = controls.querySelector(".video-controls-volume");
+                        let fullscreen = controls.querySelector(".video-controls-fullscreen");
+
+                        playpause.addEventListener("click", e => {
+                            if (video.paused || video.ended) {
+                                video.play();
+                                playpause.setAttribute("data-state", "pause");
+                            } else {
+                                video.pause();
+                                playpause.setAttribute("data-state", "play");
+                            }
+                        });
+                        video.addEventListener("loadedmetadata", () => {
+                            progress.setAttribute("max", video.duration);
+                        });
+                        video.addEventListener("timeupdate", () => {
+                            if (!progress.getAttribute("max")) {
+                                progress.setAttribute("max", video.duration);
+                            }
+                            progress.value = video.currentTime;
+                        });
+                        progress.addEventListener("click", e => {
+                            let x = e.clientX - (e.target.offsetLeft + e.target.offsetParent.offsetLeft);
+                            let pos = x * e.target.max / e.target.offsetWidth;
+                            video.currentTime = pos;
+                            e.target.value = pos;
+                        });
+                        mute.addEventListener("click", e => {
+                            audio.muted = !audio.muted;
+                            mute.setAttribute("data-state", audio.muted ? "unmute" : "mute");
+                            if (audio.muted) {
+                                volume.value = 0;
+                            } else {
+                                volume.value = audio.volume;
+                            }
+                        });
+                        volume.addEventListener("click", e => {
+                            let x = e.clientX - (e.target.offsetLeft + e.target.offsetParent.offsetLeft);
+                            let vol = x * e.target.max / e.target.offsetWidth;
+                            audio.volume = vol;
+                            e.target.value = vol;
+                            if (audio.muted) {
+                                audio.muted = false;
+                                mute.setAttribute("data-state", "mute");
+                            }
+                        });
+                        
+                        let containerElem = container.children[0];
+                        fullscreen.addEventListener("click", e => {
+                            let isFullScreen = !!(document.fullscreen || document.webkitIsFullScreen || document.mozFullScreen || document.msFullscreenElement || document.fullscreenElement);
+
+                            if (isFullScreen) {
+                                if (document.exitFullscreen) document.exitFullscreen();
+                                else if (document.mozCancelFullScreen) document.mozCancelFullScreen();
+                                else if (document.webkitCancelFullScreen) document.webkitCancelFullScreen();
+                                else if (document.msExitFullscreen) document.msExitFullscreen();
+                                containerElem.setAttribute("data-fullscreen", false);
+                                fullscreen.setAttribute("data-state", "fullscreen");
+                            } else {
+                                if (containerElem.requestFullscreen) containerElem.requestFullscreen();
+                                else if (containerElem.mozRequestFullScreen) containerElem.mozRequestFullScreen();
+                                else if (containerElem.webkitRequestFullScreen) containerElem.webkitRequestFullScreen();
+                                else if (contacontainerEleminer.msRequestFullscreen) containerElem.msRequestFullscreen();
+                                containerElem.setAttribute("data-fullscreen", true);
+                                fullscreen.setAttribute("data-state", "unfullscreen");
+                            }
+                        });
+                        document.addEventListener('fullscreenchange', function(e) {
+                            let isFullScreen = !!(document.fullscreen || document.fullscreenElement);
+                            container.setAttribute("data-fullscreen", isFullScreen);
+                            fullscreen.setAttribute("data-state", isFullScreen ? "fullscreen": "unfullscreen");
+                        });
+                        document.addEventListener('webkitfullscreenchange', function() {
+                            let isFullScreen = !!document.webkitIsFullScreen;
+                            container.setAttribute("data-fullscreen", isFullScreen);
+                            fullscreen.setAttribute("data-state", isFullScreen ? "fullscreen": "unfullscreen");
+                        });
+                        document.addEventListener('mozfullscreenchange', function() {
+                            let isFullScreen = !!document.mozFullScreen;
+                            container.setAttribute("data-fullscreen", isFullScreen);
+                            fullscreen.setAttribute("data-state", isFullScreen ? "fullscreen": "unfullscreen");
+                        });
+                        document.addEventListener('msfullscreenchange', function() {
+                            let isFullScreen = !!document.msFullscreenElement;
+                            container.setAttribute("data-fullscreen", isFullScreen);
+                            fullscreen.setAttribute("data-state", isFullScreen ? "fullscreen": "unfullscreen");
+                        });
+
+                        video.onplay = () => {
+                            audio.currentTime = video.currentTime;
+                            audio.play();
+                        };
+                        video.onplaying = () => {
+                            audio.currentTime = video.currentTime;
+                            audio.play();
+                        };
+                        video.onpause = () => {
+                            audio.pause();
+                        };
+                        video.onwaiting = () => {
+                            audio.pause();
+                        };
+                        video.onvolumechange = () => {
+                            audio.volume = video.volume;
+                        };
+                        video.onseeking = () => {
+                            audio.currentTime = video.currentTime;
+                        };
+                        video.onseeked = () => {
+                            audio.currentTime = video.currentTime;
+                        };
+
+                        contentElement.appendChild(container);
+                        break;
+                    case "text":
+                        contentElement.innerHTML = marked(htmlDecode(submission.selftext));
+                        break;
+                }
             }
 
             fetch(url)
@@ -179,14 +358,13 @@
                 .then(data => {
                     let template = document.getElementById('template-{{ $id }}');
                     let div = document.createElement("div");
-                    el.parentNode.replaceChild(div, el);
 
                     let clone = template.content.cloneNode(true);
                     let title = clone.querySelector(".submission-title");
                     let author = clone.querySelector(".submission-author");
                     let date = clone.querySelector(".submission-date");
                     let score = clone.querySelector(".submission-score");
-                    let text = clone.querySelector(".submission-text");
+                    let content = clone.querySelector(".submission-content");
                     let origin = clone.querySelector(".submission-origin");
 
                     title.innerHTML = data.title;
@@ -198,11 +376,13 @@
                     date.innerText = new Date(data.created_utc * 1000).toDateString();
                     score.innerText = data.score;
 
-                    text.innerHTML = renderPostContent(data.selftext, data.id);
+                    renderPostContent(data, content);
 
                     origin.href = data.url;
 
                     div.appendChild(clone);
+
+                    el.parentNode.replaceChild(div, el);
                 });
         })();
     </script>
